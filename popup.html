@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="On the go, live stream TV, enjoy sports, entertainment, music, etc. all in one click."
+    />
+    <meta name="keywords" content="stream, tv, browser, extension" />
+    <meta name="author" content="Plurg Inc." />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="popup.css" />
+    <link rel="icon" type="image/png" href="./icons/plurg-32.png" />
+    <script src="./libs/firebase-app.js"></script>
+    <script src="./libs/firebase-auth.js"></script>
+    <script src="./libs/firebase-config.js"></script>
+    <script defer src="./libs/socket.io.js"></script>
+    <script defer src="popup.js"></script>
+    <title>Plurg TV</title>
+  </head>
+  <body class="home">
+    <div class="splash">
+      <label>Plurg</label>
+      <img src="./icons/plurg-start.png" />
+    </div>
+    <div class="home_cover">
+      <div class="broad top">
+        <div class="top_nav">
+          <a href="https://www.plurg.me" target="_blank" class="web_btn btns"
+            ><label class="brand">Plurg.me</label></a
+          >
+          <div class="top_nav_mid">
+            <div class="count_indicator"></div>
+            <label class="count"><b class="ac_count"></b></label>
+          </div>
+          <div class="top_nav_end">
+            <img src="./icons/refresh.png" alt="" class="refresh_btn" />
+            <img src="./icons/menu.png" alt="settings" class="settings" />
+          </div>
+        </div>
+        <hr />
+        <div class="channels">
+          <div data-id="All" class="all channel">
+            <label>All</label><img src="./icons/tv.png" />
+          </div>
+          <div data-id="Entertainment" class="entertainment channel">
+            <label>Entertainment</label>
+            <img src="./icons/entertainment.png" />
+          </div>
+          <div data-id="Sports" class="sports channel">
+            <label>Sports</label><img src="./icons/sports.png" />
+          </div>
+          <div data-id="Tech" class="tech channel">
+            <label>Tech</label><img src="./icons/tech.png" />
+          </div>
+          <div data-id="Business" class="business channel">
+            <label>Business</label><img src="./icons/business.png" />
+          </div>
+        </div>
+      </div>
+      <div class="mid broad">
+        <div class="mid_menu">
+          <label># Now Showing</label>
+          <label class="content now"></label>
+
+          <label># Up Next</label>
+          <label class="content next"></label>
+
+          <label># Account</label>
+          <div class="signin-container">
+            <button class="signin_btn">Sign In with Google</button>
+            <div class="spinner"></div>
+          </div>
+          <label class="content session"></label>
+
+          <label># Connect with Us</label>
+          <label class="content next">
+            For business, ad placement, reports, complaints or learning more
+            about plurg, you can reach us at:
+          </label>
+          <div class="connect_opts">
+            <a href=""><img src="icons/web.png" alt="website" /></a>
+            <a href=""><img src="icons/x.webp" alt="x" /></a>
+            <a href=""><img src="icons/gmail.png" alt="mail" /></a>
+          </div>
+        </div>
+        <ul class="thread"></ul>
+        <label class="no_msgs">Be the first to comment!</label>
+      </div>
+      <div class="broad bottom">
+        <div class="msg_container">
+          <input
+            type="text"
+            class="write_field"
+            maxlength="127"
+            placeholder="Write..."
+          />
+          <div class="count_container">
+            <hr />
+            <label class="word_count">0/127</label>
+          </div>
+          <img src="./icons/send.png" alt="" class="write_btn btns" />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

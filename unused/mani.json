@@ -1,0 +1,9 @@
+{
+  "oauth2": {
+    "client_id": "844674369242-aqqk83ks12ct0d8v3t4tsqkp6j13t6lq.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  }
+}
