@@ -53,14 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Seek
     videoTV.addEventListener("timeupdate", () => {
       seekBar.value = (videoTV.currentTime / videoTV.duration) * 100 || 0;
       currentTime.textContent = formatTime(videoTV.currentTime);
     });
 
     seekBar.addEventListener("input", () => {
-      // Update current time
       videoTV.currentTime = (seekBar.value / 100) * videoTV.duration;
     });
 
@@ -96,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         hls.loadSource(obj.url);
         hls.attachMedia(videoTV);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          //videoTV.play();
           videoTV.addEventListener("loadedmetadata", () => {
             spinner.style.display = "none";
             duration.textContent = formatTime(videoTV.duration);

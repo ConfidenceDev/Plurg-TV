@@ -51,7 +51,7 @@
       }
 
       .customControls .btnsContainer {
-        width: 15%;
+        max-width: 30%;
         display: flex;
         flex-direction: row;
         padding: 2px;
@@ -62,8 +62,8 @@
 
       .customControls .playPause,
       .customControls .muteUnmute {
-        width: 16%;
-        height: 16%;
+        width: 20%;
+        height: 20%;
         opacity: 0.4;
       }
 
@@ -76,6 +76,7 @@
         opacity: 0.4;
         justify-self: center;
         align-self: center;
+        margin-right: 10%;
       }
 
       .customControls input:hover,
@@ -125,9 +126,8 @@
       @media (max-width: 1024px) {
         .customControls .playPause,
         .customControls .muteUnmute {
-          width: 14%;
-          height: 14%;
-          opacity: 0.4;
+          width: 8%;
+          height: 8%;
         }
       }
     </style>
