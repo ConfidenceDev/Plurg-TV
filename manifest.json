@@ -23,7 +23,7 @@
     "type": "module"
   },
   "externally_connectable": {
-    "matches": ["https://cmhahjhejmlloijjokahkibknjhlladg.chromiumapp.org/*"]
+    "matches": ["https://okkckmldiolpfjignfpblddgmfbncpfl.chromiumapp.org/*"]
   },
   "web_accessible_resources": [
     {
