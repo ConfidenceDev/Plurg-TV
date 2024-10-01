@@ -1,5 +1,6 @@
 const splashCover = document.querySelector(".splash");
 const homeCover = document.querySelector(".home_cover");
+const brandSpinner = document.querySelector(".brand_spinner");
 const count = document.querySelector(".ac_count");
 const refreshBtn = document.querySelector(".refresh_btn");
 const channelsNav = document.querySelector(".channels");
@@ -88,6 +89,7 @@ settingsBtn.addEventListener("click", (e) => {
 
 //================================== Connect ========================================
 socket.on("connect", () => {
+  brandSpinner.style.display = "none";
   session = socket.id;
   let clientId = null;
   socket.on("onclient", (obj) => {
