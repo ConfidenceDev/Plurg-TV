@@ -1,27 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const channel = urlParams.get("channel");
-  const title = urlParams.get("title");
-  const timestamp = parseFloat(urlParams.get("timestamp")) || 0;
-  const savedTimestamp = {
-    channel: channel,
-    title: title,
-    timestamp: timestamp,
-  };
   const videoTV = document.querySelector(".tv");
   const playPauseButton = document.querySelector(".playPause");
   const seekBar = document.querySelector(".seekBar");
   const muteUnmuteButton = document.querySelector(".muteUnmute");
   const spinner = document.querySelector(".spinner");
+  const currentTime = document.querySelector(".currentTime");
+  const duration = document.querySelector(".duration");
 
   chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
     if (obj.tag === "loadTVStream") {
-      loadTV(obj.id, obj.url, obj.interrupt);
+      loadTV(obj);
       sendResponse({ success: true });
     }
   });
 
-  function loadTV(id, streamUrl, interrupt) {
+  function loadTV(obj) {
     const isHLS = (url) => {
       return url && url.endsWith(".m3u8");
     };
@@ -34,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return !videoTV.paused && videoTV.currentTime > 0 && !video.ended;
     }
 
-    if (isTVPlaying(videoTV) && !interrupt) return;
+    if (isTVPlaying(videoTV) && !obj.interrupt) return;
 
     if (isTVPlaying(videoTV)) {
       videoTV.pause();
@@ -62,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Seek
     videoTV.addEventListener("timeupdate", () => {
       seekBar.value = (videoTV.currentTime / videoTV.duration) * 100 || 0;
+      currentTime.textContent = formatTime(videoTV.currentTime);
     });
 
     seekBar.addEventListener("input", () => {
@@ -88,43 +83,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     videoTV.addEventListener("ended", () => {
       spinner.style.display = "block";
-      chrome.runtime.sendMessage({ tag: "vidDone", id: id });
+      chrome.runtime.sendMessage({ tag: "vidDone", id: obj.id });
     });
 
-    if (isHLS(streamUrl)) {
+    vidToSave = {
+      title: obj.now,
+      channel: obj.channel,
+    };
+    if (isHLS(obj.url)) {
       if (Hls.isSupported()) {
         const hls = new Hls();
-        hls.loadSource(streamUrl);
+        hls.loadSource(obj.url);
         hls.attachMedia(videoTV);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoTV.play();
-          videoTV.addEventListener("canplay", () => {
+          //videoTV.play();
+          videoTV.addEventListener("loadedmetadata", () => {
             spinner.style.display = "none";
+            duration.textContent = formatTime(videoTV.duration);
+            videoTV.play();
           });
         });
       } else if (videoTV.canPlayType("application/vnd.apple.mpegurl")) {
         // Fallback for Safari browsers
-        videoTV.src = streamUrl;
+        videoTV.src = obj.url;
         videoTV.addEventListener("loadedmetadata", () => {
           spinner.style.display = "none";
+          duration.textContent = formatTime(videoTV.duration);
           videoTV.play();
         });
       }
     } else {
-      videoTV.src = streamUrl;
+      videoTV.src = obj.url;
       videoTV.addEventListener("loadedmetadata", () => {
         spinner.style.display = "none";
+        duration.textContent = formatTime(videoTV.duration);
         videoTV.play();
       });
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins < 10 ? "0" + mins : mins}:${
+        secs < 10 ? "0" + secs : secs
+      }`;
     }
   }
 
   window.addEventListener("beforeunload", () => {
-    if (!videoTV.ended) {
-      chrome.storage.local.set({ videoTimestamp: videoTV.currentTime });
-    } else {
-      chrome.storage.local.remove("videoTimestamp");
-    }
     chrome.storage.local.remove("tvId");
   });
 });

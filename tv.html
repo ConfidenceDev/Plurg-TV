@@ -50,22 +50,32 @@
         opacity: 1;
       }
 
+      .customControls .btnsContainer {
+        width: 15%;
+        display: flex;
+        flex-direction: row;
+        padding: 2px;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+
       .customControls .playPause,
       .customControls .muteUnmute {
-        width: 4%;
-        height: 4%;
-        margin-left: 16px;
-        margin-right: 16px;
+        width: 16%;
+        height: 16%;
         opacity: 0.4;
       }
 
-      .customControls .playPause {
-        margin-left: 32px;
+      .customControls .muteUnmute {
+        margin-left: 8px;
       }
 
       .customControls input {
-        width: 70%;
+        width: 45%;
         opacity: 0.4;
+        justify-self: center;
+        align-self: center;
       }
 
       .customControls input:hover,
@@ -73,6 +83,21 @@
       .customControls .muteUnmute {
         opacity: 1;
         cursor: pointer;
+      }
+
+      .customControls .durationContainer {
+        width: 15%;
+        display: flex;
+        flex-direction: row;
+        padding: 2px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .customControls label {
+        color: white;
+        font-weight: bold;
+        font-size: 1.1em;
       }
 
       .spinner {
@@ -96,6 +121,15 @@
           transform: rotate(360deg);
         }
       }
+
+      @media (max-width: 1024px) {
+        .customControls .playPause,
+        .customControls .muteUnmute {
+          width: 14%;
+          height: 14%;
+          opacity: 0.4;
+        }
+      }
     </style>
     <script src="./libs/hls.min.js"></script>
     <script src="tv.js" defer></script>
@@ -103,9 +137,15 @@
   <body>
     <video class="tv" autoplay></video>
     <div class="customControls">
-      <img src="./icons/pause.png" class="playPause" />
+      <div class="btnsContainer">
+        <img src="./icons/pause.png" class="playPause" />
+        <img src="./icons/mute.png" class="muteUnmute" />
+      </div>
       <input type="range" class="seekBar" value="0" min="0" step="0.1" />
-      <img src="./icons/mute.png" class="muteUnmute" />
+      <div class="durationContainer">
+        <label class="currentTime">00:00</label>/
+        <label class="duration">00:00</label>
+      </div>
     </div>
     <div class="spinner"></div>
   </body>

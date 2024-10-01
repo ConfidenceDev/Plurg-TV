@@ -19,7 +19,7 @@ const spinner = document.querySelector(".spinner");
 const sessionEl = document.querySelector(".session");
 
 //================================== Initialize =======================================
-const socket = io("http://localhost:5000");
+const socket = io("https://plurg-server.onrender.com");
 const size = 10;
 let isHome = true;
 let session = null;
@@ -34,10 +34,8 @@ setTimeout(() => {
   homeCover.style.display = "block";
 }, 2000);
 
-//chrome.storage.local.remove("tvId");
 chrome.storage.local.get("tvId", (result) => {
   if (result.tvId) tvWindowId = result.tvId;
-  //console.log(tvWindowId);
 });
 
 chrome.storage.local.get("userProfile", (result) => {
@@ -45,8 +43,6 @@ chrome.storage.local.get("userProfile", (result) => {
     userRecord = result.userProfile;
     signInBtn.innerText = "Sign Out";
     sessionEl.innerText = `Signed in as: ${result.userProfile.email}`;
-
-    console.log(result.userProfile);
   } else sessionEl.innerText = "";
 });
 
@@ -108,8 +104,10 @@ socket.on("connect", () => {
   socket.on("showing", (obj) => {
     obj.data.id = obj.id;
     obj = obj.data;
+    obj.channel = channel;
     nowShow.innerText = obj.now;
     nextShow.innerText = obj.next;
+
     //chrome.runtime.sendMessage({ tag: "err", msg: obj });
     chrome.runtime.sendMessage({ ...obj });
     winObj = obj;
@@ -145,21 +143,11 @@ socket.on("connect", () => {
     }
 
     if (tvWindowId === null) createTVWindow();
-    chrome.windows.update(tvWindowId, { focused: true });
     socket.emit("showing", channel);
   });
 
   async function createTVWindow() {
-    const sTObj = await new Promise((resolve) => {
-      chrome.storage.local.get(["videoTimestamp"], (result) => {
-        resolve(result.videoTimestampObj || 0);
-      });
-    });
-
-    let url = "tv.html";
-    if (sTObj != 0)
-      url = `tv.html?timstamp=${sTObj.timestamp}&channel=${sTObj.channel}&title=${sTObj.title}`;
-
+    const url = "tv.html";
     const minWidth = 300;
     const minHeight = 250;
     chrome.windows.create(
@@ -193,10 +181,6 @@ socket.on("connect", () => {
       console.log("Incoming: ", messages);
       chrome.storage.local.set({ [channel]: messages });
       threadList.scrollTop = threadList.scrollHeight;
-
-      /* //===================== Delete Item =================
-      const liDel = threadList.querySelector(`li[data-id="${obj.id}"]`);
-      if (liDel) threadList.removeChild(liDel);*/
     });
   });
 
@@ -269,7 +253,6 @@ socket.on("connect", () => {
           return;
         }
         alert("Success signin in progess...");
-        // Extract the access token from the redirect URL
         const token = redirectUrl.match(/access_token=([^&]+)/)[1];
         const credential = firebase.auth.GoogleAuthProvider.credential(
           null,
@@ -329,6 +312,11 @@ socket.on("connect", () => {
         console.error("Error signing out", error);
       });
   }
+
+  window.addEventListener("beforeunload", () => {
+    socket.emit("leave-room", channel);
+    socket.disconnect();
+  });
 });
 
 chrome.windows.onRemoved.addListener((closedWindowId) => {
@@ -359,7 +347,6 @@ function addItem(data) {
 
   const urlPattern =
     /(https?:\/\/(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g;
-  // Replace URLs in the text with anchor tags
   const modifiedMsg = data.msg.replace(urlPattern, (url) => {
     return `<a href="${url}" class="thread_url" target="_blank">${url}</a>`;
   });
