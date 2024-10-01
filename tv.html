@@ -93,6 +93,7 @@
         padding: 2px;
         justify-content: center;
         align-items: center;
+        margin-right: 16px;
       }
 
       .customControls label {
@@ -123,11 +124,19 @@
         }
       }
 
-      @media (max-width: 1024px) {
+      @media (min-width: 1024px) {
         .customControls .playPause,
         .customControls .muteUnmute {
-          width: 8%;
-          height: 8%;
+          width: 10%;
+          height: 10%;
+        }
+
+        .customControls .muteUnmute {
+          margin-left: 16px;
+        }
+
+        .customControls input {
+          margin-right: 0;
         }
       }
     </style>

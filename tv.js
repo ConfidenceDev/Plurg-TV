@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     function isTVPlaying(videoTV) {
-      return !videoTV.paused && videoTV.currentTime > 0 && !video.ended;
+      return !videoTV.paused && videoTV.currentTime > 0 && !videoTV.ended;
     }
 
     if (isTVPlaying(videoTV) && !obj.interrupt) return;
@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.addEventListener("beforeunload", () => {
+    if (!videoTV.paused || !videoTV.ended) videoTV.pause();
     chrome.storage.local.remove("tvId");
   });
 });

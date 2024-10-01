@@ -97,6 +97,7 @@ socket.on("connect", () => {
   });
 
   socket.emit("join-room", channel);
+  socket.emit("showing", channel);
   let winObj = null;
 
   socket.on("nom", (obj) => {
@@ -150,8 +151,8 @@ socket.on("connect", () => {
 
   async function createTVWindow() {
     const url = "tv.html";
-    const minWidth = 300;
-    const minHeight = 250;
+    const minWidth = 320;
+    const minHeight = 270;
     chrome.windows.create(
       {
         url: url,
