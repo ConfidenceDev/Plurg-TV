@@ -25,14 +25,8 @@
   "externally_connectable": {
     "matches": ["https://okkckmldiolpfjignfpblddgmfbncpfl.chromiumapp.org/*"]
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["hls.min.js", "libs/socket.io.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "content_security_policy": {
-    "script-src": "'self' 'unsafe-eval'",
+    "script-src": "'self'",
     "media-src": "https://*",
     "object-src": "'self'"
   }

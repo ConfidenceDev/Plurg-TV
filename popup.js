@@ -255,40 +255,32 @@ socket.on("connect", () => {
           });
           return;
         }
-        alert("Success signin in progess...");
+        alert("Success, signin in progess...");
         const token = redirectUrl.match(/access_token=([^&]+)/)[1];
-        const credential = firebase.auth.GoogleAuthProvider.credential(
-          null,
-          token
-        );
 
-        firebase
-          .auth()
-          .signInWithCredential(credential)
-          .then((result) => {
-            const user = result.user;
+        fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => response.json())
+          .then((user) => {
+            const obj = {
+              username: user.name,
+              img: user.picture,
+              email: user.email,
+            };
+            chrome.storage.local.set({ userProfile: obj });
+            chrome.storage.local.set({ userToken: token });
+            socket.emit("loadUser", obj);
 
-            chrome.runtime.sendMessage({
-              tag: "err",
-              msg: "User",
-              url: user,
-            });
-
-            if (user) {
-              const obj = {
-                username: user.displayName,
-                img: user.photoURL,
-                email: user.email,
-              };
-              chrome.storage.local.set({ userProfile: obj });
-              userRecord = obj;
-              signInBtn.innerText = "Sign Out";
-              sessionEl.innerText = `Signed in as: ${obj.email}`;
-              spinner.style.display = "none";
-            }
+            userRecord = obj;
+            signInBtn.innerText = "Sign Out";
+            sessionEl.innerText = `Signed in as: ${obj.email}`;
+            spinner.style.display = "none";
           })
           .catch((error) => {
-            console.error("Sign-in error:", error);
+            console.error("Failed to get user info:", error);
             chrome.runtime.sendMessage({
               tag: "err",
               msg: "Failed",
@@ -300,20 +292,35 @@ socket.on("connect", () => {
   });
 
   function signOut() {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        chrome.storage.local.remove("userProfile", () => {
-          sessionEl.innerText = "";
-          spinner.style.display = "none";
-          signInBtn.innerText = "Sign In with Google";
-          userRecord = null;
-        });
-      })
-      .catch((error) => {
-        console.error("Error signing out", error);
-      });
+    chrome.storage.local.get("userToken", (result) => {
+      if (result.userToken) {
+        fetch(
+          `https://accounts.google.com/o/oauth2/revoke?token=${result.userToken}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-type": "application/x-www-form-urlencoded",
+            },
+          }
+        )
+          .then((response) => {
+            if (response.ok) {
+              chrome.storage.local.remove("userProfile", () => {
+                sessionEl.innerText = "";
+                spinner.style.display = "none";
+                signInBtn.innerText = "Sign In with Google";
+                userRecord = null;
+              });
+              chrome.storage.local.remove("userToken");
+            } else {
+              console.error("Failed to revoke token:", response);
+            }
+          })
+          .catch((error) =>
+            console.error("Error during token revocation:", error)
+          );
+      }
+    });
   }
 
   window.addEventListener("beforeunload", () => {
