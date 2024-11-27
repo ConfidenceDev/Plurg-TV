@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return !videoTV.paused && videoTV.currentTime > 0 && !videoTV.ended;
     }
 
-    if (isTVPlaying(videoTV) && !obj.interrupt) return;
+    if (!obj.reload) return;
 
     if (isTVPlaying(videoTV)) {
       videoTV.pause();
@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
             spinner.style.display = "none";
             duration.textContent = formatTime(videoTV.duration);
             videoTV.play();
+            playPauseButton.setAttribute("src", "./icons/pause.png");
           });
         });
       } else if (videoTV.canPlayType("application/vnd.apple.mpegurl")) {
@@ -107,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
           spinner.style.display = "none";
           duration.textContent = formatTime(videoTV.duration);
           videoTV.play();
+          playPauseButton.setAttribute("src", "./icons/pause.png");
         });
       }
     } else {
@@ -115,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         spinner.style.display = "none";
         duration.textContent = formatTime(videoTV.duration);
         videoTV.play();
+        playPauseButton.setAttribute("src", "./icons/pause.png");
       });
     }
 

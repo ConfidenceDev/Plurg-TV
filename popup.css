@@ -94,7 +94,7 @@ hr {
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -209,6 +209,7 @@ hr {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
 .home .top_nav .top_nav_mid .count_indicator {
@@ -218,6 +219,13 @@ hr {
   height: 8px;
   padding: 8px;
   margin-right: 6px;
+}
+
+.home .top_nav .top_nav_mid img {
+  width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  align-self: flex-start;
 }
 
 .home .top_nav .top_nav_end {

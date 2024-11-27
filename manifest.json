@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Plurg",
-  "version": "0.0.5",
-  "description": "On the go, live stream TV, enjoy sports, entertainment, music, etc. all in one click.",
+  "version": "0.0.6",
+  "description": "On the go, live stream TV, enjoy sports, entertainment, movies, music, science, tech, business, etc. all in one click.",
   "permissions": ["identity", "storage", "windows", "tabs"],
   "icons": {
     "32": "icons/plurg-32.png",

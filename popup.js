@@ -18,9 +18,11 @@ const nextShow = document.querySelector(".next");
 const signInBtn = document.querySelector(".signin_btn");
 const spinner = document.querySelector(".spinner");
 const sessionEl = document.querySelector(".session");
+const helpBtn = document.querySelector(".help_btn");
 
 //================================== Initialize =======================================
 const socket = io("https://plurg-server.onrender.com");
+
 const size = 10;
 let isHome = true;
 let session = null;
@@ -29,6 +31,7 @@ let userRecord = null;
 let prevChannel = null;
 let channel = "All";
 let isMenu = false;
+let reload = false;
 
 setTimeout(() => {
   splashCover.style.display = "none";
@@ -87,12 +90,24 @@ settingsBtn.addEventListener("click", (e) => {
   }
 });
 
+helpBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  alert(
+    `* Swap between TV channels by clicking the channel of choice.
+* TV streams update regularly; check now showing and up next for more info.
+* Member Count shows the number of members present in the same channel.
+* Keep chat civil and respectful. The user report option would be available soon.
+* Enjoy 😊
+    `
+  );
+});
+
 //================================== Connect ========================================
 socket.on("connect", () => {
   brandSpinner.style.display = "none";
   session = socket.id;
   let clientId = null;
-  socket.on("onclient", (obj) => {
+  socket.once("onclient", (obj) => {
     clientId = obj;
   });
 
@@ -104,17 +119,21 @@ socket.on("connect", () => {
     count.innerText = toComma(obj);
   });
 
-  socket.on("showing", (obj) => {
-    obj.data.id = obj.id;
-    obj = obj.data;
-    obj.channel = channel;
-    nowShow.innerText = obj.now;
-    nextShow.innerText = obj.next;
+  if (!socket.hasListeners("showing")) {
+    socket.on("showing", (obj) => {
+      //chrome.runtime.sendMessage({ tag: "err", msg: obj });
 
-    //chrome.runtime.sendMessage({ tag: "err", msg: obj });
-    chrome.runtime.sendMessage({ ...obj });
-    winObj = obj;
-  });
+      obj.data.id = obj.id;
+      obj = obj.data;
+      obj.channel = channel;
+      obj.reload = reload;
+      nowShow.innerText = obj.now;
+      nextShow.innerText = obj.next;
+
+      chrome.runtime.sendMessage({ ...obj });
+      winObj = obj;
+    });
+  }
 
   chrome.runtime.onMessage.addListener((obj, sender, response) => {
     if (obj.tag === "sendVidDone") {
@@ -145,6 +164,7 @@ socket.on("connect", () => {
       socket.emit("join-room", channel);
     }
 
+    reload = true;
     if (tvWindowId === null) createTVWindow();
     socket.emit("showing", channel);
   });
@@ -167,7 +187,7 @@ socket.on("connect", () => {
         chrome.storage.local.set({ tvId: window.id });
         setTimeout(() => {
           if (winObj) chrome.runtime.sendMessage({ ...winObj });
-        }, 500);
+        }, 700);
       }
     );
   }
