@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <link href="./libs/videojs.min.css" rel="stylesheet" /> -->
+    <script src="./libs/videojs.min.js"></script>
+  </head>
+  <body>
+    <h1>📰 IPTV News Channels</h1>
+
+    <select id="channelSelector" onchange="playSelectedChannel()">
+      <option value="">Select a news channel...</option>
+    </select>
+
+    <video
+      id="my-player"
+      class="video-js vjs-default-skin"
+      height="200"
+      width="200"
+      preload="auto"
+    ></video>
+
+    <script>
+      const playlistUrl = "https://iptv-org.github.io/iptv/categories/news.m3u";
+      const channelSelector = document.getElementById("channelSelector");
+
+      const options = {
+        autoplay: true,
+        controls: false,
+        sources: [],
+      };
+
+      const player = videojs("my-player", options, function onPlayerReady() {
+        videojs.log("Your player is ready!");
+        this.on("ended", function () {
+          videojs.log("Awww...over so soon?!");
+        });
+      });
+
+      // Fetch and parse the M3U playlist
+      async function loadPlaylist() {
+        try {
+          const res = await fetch(playlistUrl);
+          const text = await res.text();
+
+          const lines = text.split("\n");
+          const channels = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith("#EXTINF")) {
+              const nameMatch = lines[i].match(/,(.*)/);
+              const name = nameMatch ? nameMatch[1].trim() : "Unnamed Channel";
+              const url = lines[i + 1]?.trim();
+              if (url && url.startsWith("http")) {
+                channels.push({ name, url });
+              }
+            }
+          }
+
+          channels.forEach((channel) => {
+            const option = document.createElement("option");
+            option.value = channel.url;
+            option.textContent = channel.name;
+            channelSelector.appendChild(option);
+          });
+
+          // Optionally auto-play first available channel
+          if (channels.length > 0) {
+            player.src({ src: channels[0].url, type: "application/x-mpegURL" });
+            player.play();
+            channelSelector.value = channels[0].url;
+          }
+        } catch (err) {
+          console.error("Failed to load playlist:", err);
+        }
+      }
+
+      // Play the selected channel
+      function playSelectedChannel() {
+        const url = channelSelector.value;
+        if (url) {
+          player.src({ src: url, type: "application/x-mpegURL" });
+          player.play();
+        }
+      }
+
+      // Load on startup
+      loadPlaylist();
+    </script>
+  </body>
+</html>

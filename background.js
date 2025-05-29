@@ -8,12 +8,16 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
   } else if (obj.tag === "loadTV") {
     chrome.windows.getAll({ populate: true }, (windows) => {
       let tvWindowFound = false;
-      obj.tag = "loadTVStream";
       windows.forEach((window) => {
         window.tabs.forEach((tab) => {
           if (tab.url.includes("tv.html")) {
             tvWindowFound = true;
             chrome.tabs.sendMessage(tab.id, obj, null);
+            const payload = {
+              tag: "isOpen",
+              answer: true,
+            };
+            chrome.runtime.sendMessage(payload);
           }
         });
       });
@@ -22,8 +26,8 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
         console.log("No active TV window found.");
       }
     });
-  } else if (obj.tag === "vidDone") {
-    obj.tag = "sendVidDone";
+  } else if (obj.tag === "next") {
+    obj.tag = "sendNext";
     chrome.runtime.sendMessage(obj);
   }
 });

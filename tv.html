@@ -9,6 +9,8 @@
     />
     <meta name="keywords" content="stream, tv, browser, extension" />
     <meta name="author" content="Plurg Inc." />
+    <link href="./libs/videojs.min.css" rel="stylesheet" />
+    <script src="./libs/videojs.min.js"></script>
     <title>Plurg TV</title>
     <style>
       html,
@@ -26,136 +28,44 @@
         align-items: center;
       }
 
-      video {
-        width: 100%;
-        height: 100%;
+      .player {
+        width: 100vw;
+        height: 100vh;
         object-fit: cover;
-        position: relative;
       }
 
-      .customControls {
+      .navStreams {
         position: absolute;
-        bottom: 8px;
-        right: 0;
-        width: 100%;
-        padding: 8px;
+        top: 0;
+        left: 0;
+        margin: 2px 0 0 2px;
         display: flex;
         flex-direction: row;
-        justify-content: space-evenly;
-        align-items: center;
-        opacity: 0;
-      }
-
-      .customControls:hover {
-        opacity: 1;
-      }
-
-      .customControls .btnsContainer {
-        max-width: 30%;
-        display: flex;
-        flex-direction: row;
-        padding: 2px;
-        justify-content: center;
-        align-items: center;
         gap: 8px;
+        padding: 4px;
       }
 
-      .customControls .playPause,
-      .customControls .muteUnmute {
-        width: 20%;
-        height: 20%;
-        opacity: 0.4;
-      }
-
-      .customControls .muteUnmute {
-        margin-left: 8px;
-      }
-
-      .customControls input {
-        width: 45%;
-        opacity: 0.4;
-        justify-self: center;
-        align-self: center;
-        margin-right: 10%;
-      }
-
-      .customControls input:hover,
-      .customControls .playPause,
-      .customControls .muteUnmute {
-        opacity: 1;
-        cursor: pointer;
-      }
-
-      .customControls .durationContainer {
-        width: 15%;
-        display: flex;
-        flex-direction: row;
-        padding: 2px;
-        justify-content: center;
-        align-items: center;
-        margin-right: 16px;
-      }
-
-      .customControls label {
+      label {
+        background-color: #385361;
+        padding: 4px 14px 6px 14px;
+        font-size: 0.5rem;
         color: white;
-        font-weight: bold;
-        font-size: 1.1em;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0.7;
       }
 
-      .spinner {
-        position: absolute;
-        border: 4px solid rgba(0, 0, 0, 0);
-        border-radius: 50%;
-        border-top: 4px solid whitesmoke;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        justify-self: center;
-        align-self: center;
-        display: block;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      @media (min-width: 1024px) {
-        .customControls .playPause,
-        .customControls .muteUnmute {
-          width: 10%;
-          height: 10%;
-        }
-
-        .customControls .muteUnmute {
-          margin-left: 16px;
-        }
-
-        .customControls input {
-          margin-right: 0;
-        }
+      label:hover {
+        opacity: 0.4;
       }
     </style>
-    <script src="./libs/hls.min.js"></script>
-    <script src="tv.js" defer></script>
   </head>
   <body>
-    <video class="tv" autoplay></video>
-    <div class="customControls">
-      <div class="btnsContainer">
-        <img src="./icons/pause.png" class="playPause" />
-        <img src="./icons/mute.png" class="muteUnmute" />
-      </div>
-      <input type="range" class="seekBar" value="0" min="0" step="0.1" />
-      <div class="durationContainer">
-        <label class="currentTime">00:00</label>/
-        <label class="duration">00:00</label>
-      </div>
+    <video id="tv" class="video-js player" autoplay preload="auto"></video>
+    <div class="navStreams">
+      <label class="prevStream">&#x276E;</label>
+      <label class="nextStream">&#x276F;</label>
     </div>
-    <div class="spinner"></div>
+    <script src="tv.js"></script>
   </body>
 </html>

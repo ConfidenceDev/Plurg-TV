@@ -42,15 +42,12 @@ let prevChannel = null;
 let channel = "All";
 let isMenu = false;
 let reload = false;
+let isTVOpen = false;
 
 setTimeout(() => {
   splashCover.style.display = "none";
   homeCover.style.display = "block";
 }, 2000);
-
-chrome.storage.local.get("tvId", (result) => {
-  if (result.tvId) tvWindowId = result.tvId;
-});
 
 chrome.storage.local.get("userProfile", (result) => {
   if (result.userProfile) {
@@ -112,6 +109,8 @@ helpBtn.addEventListener("click", (e) => {
   );
 });
 
+chrome.runtime.sendMessage({ tag: "tvOpen", answer: false });
+
 //================================== Connect ========================================
 socket.on("connect", () => {
   brandSpinner.style.display = "none";
@@ -132,23 +131,23 @@ socket.on("connect", () => {
   if (!socket.hasListeners("showing")) {
     socket.on("showing", (obj) => {
       //chrome.runtime.sendMessage({ tag: "err", msg: obj });
-
-      obj.data.id = obj.id;
-      obj = obj.data;
       obj.channel = channel;
       obj.reload = reload;
+
       if (obj.now) nowShow.innerText = obj.now;
       if (obj.next) nextShow.innerText = obj.next;
 
-      chrome.runtime.sendMessage({ ...obj });
+      chrome.runtime.sendMessage(obj);
       winObj = obj;
     });
   }
 
   chrome.runtime.onMessage.addListener((obj, sender, response) => {
-    if (obj.tag === "sendVidDone") {
+    if (obj.tag === "sendNext") {
       obj.channel = channel;
-      socket.emit("vidDone", obj);
+      socket.emit("next", obj);
+    } else if (obj.tag === "isOpen") {
+      isTVOpen = obj.answer;
     }
   });
 
@@ -172,7 +171,7 @@ socket.on("connect", () => {
     }
 
     reload = true;
-    if (tvWindowId === null) createTVWindow();
+    if (!isTVOpen) createTVWindow();
     socket.emit("showing", channel);
   });
 
@@ -191,7 +190,6 @@ socket.on("connect", () => {
       },
       (window) => {
         tvWindowId = window.id;
-        chrome.storage.local.set({ tvId: window.id });
         setTimeout(() => {
           if (winObj) chrome.runtime.sendMessage({ ...winObj });
         }, 700);
@@ -354,13 +352,6 @@ socket.on("connect", () => {
     socket.emit("leave-room", channel);
     socket.disconnect();
   });
-});
-
-chrome.windows.onRemoved.addListener((closedWindowId) => {
-  if (closedWindowId === tvWindowId) {
-    tvWindowId = null;
-    chrome.storage.local.remove("tvId");
-  }
 });
 
 function loadMessages() {
