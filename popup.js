@@ -4,6 +4,8 @@ const brandSpinner = document.querySelector(".brand_spinner");
 const count = document.querySelector(".ac_count");
 const refreshBtn = document.querySelector(".refresh_btn");
 const channelsNav = document.querySelector(".channels");
+const prevChannelItem = document.querySelector(".prevChannel");
+const nextChannelItem = document.querySelector(".nextChannel");
 const threadList = document.querySelector(".thread");
 const wordCount = document.querySelector(".word_count");
 const bottomNav = document.querySelector(".bottom");
@@ -20,8 +22,16 @@ const spinner = document.querySelector(".spinner");
 const sessionEl = document.querySelector(".session");
 const helpBtn = document.querySelector(".help_btn");
 
+function scrollByAmount(amount) {
+  channelsNav.scrollBy({ left: amount, behavior: "smooth" });
+}
+
+prevChannelItem.addEventListener("click", () => scrollByAmount(-100));
+nextChannelItem.addEventListener("click", () => scrollByAmount(100));
+
 //================================== Initialize =======================================
-const socket = io("https://plurg-server.onrender.com");
+//const socket = io("https://plurg-server.onrender.com");
+const socket = io("http://localhost:5000");
 
 const size = 10;
 let isHome = true;
@@ -127,8 +137,8 @@ socket.on("connect", () => {
       obj = obj.data;
       obj.channel = channel;
       obj.reload = reload;
-      nowShow.innerText = obj.now;
-      nextShow.innerText = obj.next;
+      if (obj.now) nowShow.innerText = obj.now;
+      if (obj.next) nextShow.innerText = obj.next;
 
       chrome.runtime.sendMessage({ ...obj });
       winObj = obj;
@@ -137,11 +147,8 @@ socket.on("connect", () => {
 
   chrome.runtime.onMessage.addListener((obj, sender, response) => {
     if (obj.tag === "sendVidDone") {
-      const sendObj = {
-        id: obj.id,
-        channel: channel,
-      };
-      socket.emit("vidDone", sendObj);
+      obj.channel = channel;
+      socket.emit("vidDone", obj);
     }
   });
 

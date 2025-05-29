@@ -81,13 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     videoTV.addEventListener("ended", () => {
       spinner.style.display = "block";
-      chrome.runtime.sendMessage({ tag: "vidDone", id: obj.id });
+      chrome.runtime.sendMessage({
+        tag: "vidDone",
+        id: obj.id,
+        isAd: obj.isAd,
+      });
     });
 
-    vidToSave = {
-      title: obj.now,
-      channel: obj.channel,
-    };
     if (isHLS(obj.url)) {
       if (Hls.isSupported()) {
         const hls = new Hls();
@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
             duration.textContent = formatTime(videoTV.duration);
             videoTV.play();
             playPauseButton.setAttribute("src", "./icons/pause.png");
+            muteUnmuteButton.setAttribute("src", "./icons/mute.png");
           });
         });
       } else if (videoTV.canPlayType("application/vnd.apple.mpegurl")) {
@@ -109,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
           duration.textContent = formatTime(videoTV.duration);
           videoTV.play();
           playPauseButton.setAttribute("src", "./icons/pause.png");
+          muteUnmuteButton.setAttribute("src", "./icons/mute.png");
         });
       }
     } else {
@@ -118,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         duration.textContent = formatTime(videoTV.duration);
         videoTV.play();
         playPauseButton.setAttribute("src", "./icons/pause.png");
+        muteUnmuteButton.setAttribute("src", "./icons/mute.png");
       });
     }
 

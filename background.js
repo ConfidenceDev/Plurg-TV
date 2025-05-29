@@ -23,6 +23,7 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
       }
     });
   } else if (obj.tag === "vidDone") {
-    chrome.runtime.sendMessage({ tag: "sendVidDone", id: obj.id });
+    obj.tag = "sendVidDone";
+    chrome.runtime.sendMessage(obj);
   }
 });
