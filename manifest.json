@@ -4,6 +4,7 @@
   "version": "0.0.7",
   "description": "On the go, live stream TV, enjoy sports, entertainment, movies, music, science, tech, business, etc. all in one click.",
   "permissions": ["identity", "storage", "windows", "tabs"],
+  "host_permissions": ["https://plurg-server.onrender.com/*"],
   "icons": {
     "32": "icons/plurg-32.png",
     "64": "icons/plurg-64.png",

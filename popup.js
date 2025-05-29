@@ -30,8 +30,7 @@ prevChannelItem.addEventListener("click", () => scrollByAmount(-100));
 nextChannelItem.addEventListener("click", () => scrollByAmount(100));
 
 //================================== Initialize =======================================
-//const socket = io("https://plurg-server.onrender.com");
-const socket = io("http://localhost:5000");
+const socket = io("https://plurg-server.onrender.com");
 
 const size = 10;
 let isHome = true;
