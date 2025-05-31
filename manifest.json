@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Plurg",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "On the go, live stream TV, enjoy sports, entertainment, movies, music, science, tech, business, etc. all in one click.",
   "permissions": ["identity", "storage", "windows", "tabs"],
   "host_permissions": ["https://plurg-server.onrender.com/*"],

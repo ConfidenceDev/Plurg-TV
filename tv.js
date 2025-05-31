@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     autoplay: true,
     controls: true,
     sources: [],
+    vtt: {
+      js: "libs/vtt.min.js",
+    },
   };
   const videoTV = videojs("tv", options, function onPlayerReady() {
     videojs.log("TV Live!");
