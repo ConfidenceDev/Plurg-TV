@@ -3,6 +3,8 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((obj, sender, response) => {
+  console.log(obj);
+
   if (obj.tag === "err") {
     console.log(obj);
   } else if (obj.tag === "loadTV") {
@@ -12,17 +14,22 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
         window.tabs.forEach((tab) => {
           if (tab.url.includes("tv.html")) {
             tvWindowFound = true;
-            chrome.tabs.sendMessage(tab.id, obj, null);
             const payload = {
               tag: "isOpen",
               answer: true,
             };
             chrome.runtime.sendMessage(payload);
+            if (obj.open) chrome.tabs.sendMessage(tab.id, obj, null);
           }
         });
       });
 
       if (!tvWindowFound) {
+        const payload = {
+          tag: "isOpen",
+          answer: false,
+        };
+        chrome.runtime.sendMessage(payload);
         console.log("No active TV window found.");
       }
     });

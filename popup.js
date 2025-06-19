@@ -21,6 +21,8 @@ const signInBtn = document.querySelector(".signin_btn");
 const spinner = document.querySelector(".spinner");
 const sessionEl = document.querySelector(".session");
 const helpBtn = document.querySelector(".help_btn");
+const modal = document.querySelector(".alert");
+const alert_msg = document.querySelector(".alert_msg");
 
 function scrollByAmount(amount) {
   channelsNav.scrollBy({ left: amount, behavior: "smooth" });
@@ -30,7 +32,8 @@ prevChannelItem.addEventListener("click", () => scrollByAmount(-100));
 nextChannelItem.addEventListener("click", () => scrollByAmount(100));
 
 //================================== Initialize =======================================
-const socket = io("https://plurg-server.onrender.com");
+//const socket = io("https://plurg-server.onrender.com");
+const socket = io("http://localhost:5000");
 
 const size = 10;
 let isHome = true;
@@ -108,8 +111,6 @@ helpBtn.addEventListener("click", (e) => {
   );
 });
 
-chrome.runtime.sendMessage({ tag: "tvOpen", answer: false });
-
 //================================== Connect ========================================
 socket.on("connect", () => {
   brandSpinner.style.display = "none";
@@ -131,12 +132,10 @@ socket.on("connect", () => {
     socket.on("showing", (obj) => {
       //chrome.runtime.sendMessage({ tag: "err", msg: obj });
       obj.channel = channel;
-      obj.reload = reload;
-
+      obj.tag = "loadTV";
+      obj.open = true;
       if (obj.now) nowShow.innerText = obj.now;
       if (obj.next) nextShow.innerText = obj.next;
-
-      chrome.runtime.sendMessage(obj);
       winObj = obj;
     });
   }
@@ -153,6 +152,7 @@ socket.on("connect", () => {
   //================================== START TV =======================================
   channelsNav.addEventListener("click", (e) => {
     e.preventDefault();
+    chrome.runtime.sendMessage({ tag: "loadTV", answer: false });
     for (let i = 0; i < channelsNav.children.length; i++) {
       channelsNav.children[i].classList.remove("ch_sel");
     }
@@ -169,9 +169,12 @@ socket.on("connect", () => {
       socket.emit("join-room", channel);
     }
 
+    console.log(channel);
     reload = true;
-    if (!isTVOpen) createTVWindow();
     socket.emit("showing", channel);
+
+    if (!isTVOpen) createTVWindow();
+    else if (winObj) chrome.runtime.sendMessage(winObj);
   });
 
   async function createTVWindow() {
@@ -190,7 +193,7 @@ socket.on("connect", () => {
       (window) => {
         tvWindowId = window.id;
         setTimeout(() => {
-          if (winObj) chrome.runtime.sendMessage({ ...winObj });
+          if (winObj) chrome.runtime.sendMessage(winObj);
         }, 700);
       }
     );
@@ -205,8 +208,24 @@ socket.on("connect", () => {
       messages.push(obj);
       if (messages.length > 10) messages.shift();
 
-      console.log("Incoming: ", messages);
       chrome.storage.local.set({ [channel]: messages });
+      threadList.scrollTop = threadList.scrollHeight;
+    });
+  });
+
+  socket.on("delete-message", (obj) => {
+    noMsgs.style.display = "none";
+    chrome.storage.local.get([channel], (result) => {
+      let messages = result[channel] || [];
+      messages = messages.filter((item) => item.msgId !== obj);
+      chrome.storage.local.set({ [channel]: messages });
+      const allItems = document.querySelectorAll(".thread li");
+
+      allItems.forEach((item) => {
+        if (item.dataset.id === obj) {
+          item.remove();
+        }
+      });
       threadList.scrollTop = threadList.scrollHeight;
     });
   });
@@ -241,6 +260,7 @@ socket.on("connect", () => {
     const obj = {
       type: "message",
       msg: content,
+      userId: userRecord.userId,
       username: userRecord.username,
       img: userRecord.img,
       email: userRecord.email,
@@ -289,7 +309,9 @@ socket.on("connect", () => {
         })
           .then((response) => response.json())
           .then((user) => {
+            const uuid = crypto.randomUUID();
             const obj = {
+              userId: uuid,
               username: user.name,
               img: user.picture,
               email: user.email,
@@ -370,7 +392,7 @@ function loadMessages() {
 
 function addItem(data) {
   const li = document.createElement("li");
-  li.setAttribute("data-id", data.userId);
+  li.setAttribute("data-id", data.msgId);
 
   const urlPattern =
     /(https?:\/\/(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g;
@@ -378,15 +400,49 @@ function addItem(data) {
     return `<a href="${url}" class="thread_url" target="_blank">${url}</a>`;
   });
 
+  const fromMe = data.userId === userRecord.userId ? "show" : "";
+  const notFromMe = data.userId !== userRecord.userId ? "show" : "";
+
   li.innerHTML = `<div class="li_cover">
-        <img src="${data.img}" />
+        <img class="thread_avatar" src="${data.img}" />
         <div class="li_content">
           <label class="thread_username">${data.username}</label>
           <label class="thread_date">${data.date}</label>
-          <label class="thread_content">${modifiedMsg}</label>   
+          <label class="thread_content">${modifiedMsg}</label> 
+          <div class="thread_actions">
+            <button class="thread_delete ${fromMe}">Delete</button>
+            <button class="thread_flag ${notFromMe}">Flag</button>
+          </div>  
         </div>
       </div>
       <hr />`;
+
+  li.querySelector(".thread_delete").addEventListener("click", () => {
+    alert_msg.innerText = "Are you sure you want to delete comment?";
+    modal.style.display = "block";
+    document.querySelector(".alert_yes").onclick = () => {
+      socket.emit("delete-message", data.msgId);
+      modal.style.display = "none";
+    };
+
+    document.querySelector(".alert_no").onclick = () => {
+      modal.style.display = "none";
+    };
+  });
+
+  li.querySelector(".thread_flag").addEventListener("click", () => {
+    alert_msg.innerText = "Are you sure you want to flag(report) comment?";
+    modal.style.display = "block";
+    document.querySelector(".alert_yes").onclick = () => {
+      socket.emit("flag-message", data);
+      modal.style.display = "none";
+    };
+
+    document.querySelector(".alert_no").onclick = () => {
+      modal.style.display = "none";
+    };
+  });
+
   return li;
 }
 

@@ -13,19 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
     videojs.log("TV Live!");
   });
 
-  chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
-    if (obj.tag === "loadTV") {
-      loadTV(obj);
-      sendResponse({ success: true });
-    }
-  });
+  if (!window.hasListener) {
+    chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
+      console.log(obj);
+
+      if (obj.tag === "loadTV") {
+        loadTV(obj);
+        sendResponse({ success: true });
+      }
+    });
+    window.hasListener = true;
+  }
 
   function loadTV(obj) {
     const isHLS = (url) => {
       return url && url.endsWith(".m3u8");
     };
-
-    if (!obj.reload) return;
 
     prevStream.addEventListener("click", (e) => {
       e.preventDefault();
