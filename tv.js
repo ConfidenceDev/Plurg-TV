@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let prevListener = false;
   let nextListener = false;
   let adCloseLisener = false;
+  let tvObj = null;
   const closeCount = 3000;
 
   const options = {
@@ -25,8 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!window.hasListener) {
     chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
-      console.log(obj);
       if (obj.tag === "tv") {
+        tvObj = obj;
         loadTV(obj);
       }
       sendResponse({ success: true });
@@ -34,18 +35,15 @@ document.addEventListener("DOMContentLoaded", () => {
     window.hasListener = true;
   }
 
-  function loadTV(obj) {
+  function loadTV() {
     enableUI();
     const isHLS = (url) => {
       return url && url.endsWith(".m3u8");
     };
 
-    console.log(prevListener, nextListener);
     if (!prevListener) {
       prevStream.addEventListener("click", (e) => {
         e.preventDefault();
-        console.log(obj);
-
         isPrev = true;
         videoTV.pause();
         videoTV.el().style.display = "none";
@@ -62,8 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!nextListener) {
       nextStream.addEventListener("click", (e) => {
         e.preventDefault();
-        console.log(obj);
-
         isPrev = false;
         videoTV.pause();
         videoTV.el().style.display = "none";
@@ -82,30 +78,29 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isPrev) {
           chrome.runtime.sendMessage({
             tag: "prev",
-            id: parseInt(obj.id - 1),
-            isAd: obj.isAd,
+            id: parseInt(tvObj.id - 1),
+            isAd: tvObj.isAd,
           });
         } else {
-          console.log(obj);
           chrome.runtime.sendMessage({
             tag: "next",
-            id: obj.id,
-            isAd: obj.isAd,
+            id: tvObj.id,
+            isAd: tvObj.isAd,
           });
         }
 
-        console.log(obj);
+        console.log(tvObj);
         disableUI();
       });
       adCloseLisener = true;
     }
 
     videoTV.on("ended", () => {
-      obj.isAd = !obj.isAd;
+      tvObj.isAd = !tvObj.isAd;
       chrome.runtime.sendMessage({
         tag: "next",
-        id: obj.id,
-        isAd: obj.isAd,
+        id: tvObj.id,
+        isAd: tvObj.isAd,
       });
     });
 
@@ -116,19 +111,19 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         chrome.runtime.sendMessage({
           tag: "prev",
-          id: parseInt(obj.id - 1),
-          isAd: obj.isAd,
+          id: parseInt(tvObj.id - 1),
+          isAd: tvObj.isAd,
         });
       }, closeCount);
     });
 
-    if (isHLS(obj.url)) {
-      videoTV.src({ src: obj.url, type: "application/x-mpegURL" });
+    if (isHLS(tvObj.url)) {
+      videoTV.src({ src: tvObj.url, type: "application/x-mpegURL" });
       videoTV.play();
       return;
     }
 
-    videoTV.src({ src: obj.url, type: "video/mp4" });
+    videoTV.src({ src: tvObj.url, type: "video/mp4" });
     videoTV.play();
   }
 

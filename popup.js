@@ -250,18 +250,24 @@ socket.on("connect", () => {
   });
 
   socket.on("delete-message", (obj) => {
+    console.log(obj);
+
     noMsgs.style.display = "none";
     chrome.storage.local.get([channel], (result) => {
       let messages = result[channel] || [];
-      messages = messages.filter((item) => item.msgId !== obj);
+      messages = messages.filter((item) => item.msgId !== obj.msgId);
       chrome.storage.local.set({ [channel]: messages });
       const allItems = document.querySelectorAll(".thread li");
 
       allItems.forEach((item) => {
-        if (item.dataset.id === obj) {
+        if (item.dataset.id === obj.msgId) {
+          console.log(item);
           item.remove();
         }
       });
+
+      if (messages.length < 1 && !isMenu) noMsgs.style.display = "block";
+      else noMsgs.style.display = "none";
       threadList.scrollTop = threadList.scrollHeight;
     });
   });
@@ -436,8 +442,16 @@ function addItem(data) {
     return `<a href="${url}" class="thread_url" target="_blank">${url}</a>`;
   });
 
-  const fromMe = data.userId === userRecord.userId ? "show" : "";
-  const notFromMe = data.userId !== userRecord.userId ? "show" : "";
+  let fromMe;
+  let notFromMe;
+
+  if (userRecord != null) {
+    fromMe = data.userId === userRecord.userId ? "show" : "";
+    notFromMe = data.userId !== userRecord.userId ? "show" : "";
+  } else {
+    fromMe = "";
+    notFromMe = "show";
+  }
 
   li.innerHTML = `<div class="li_cover">
         <img class="thread_avatar" src="${data.img}" />
@@ -474,7 +488,12 @@ function addItem(data) {
     alert_msg.innerText = "Are you sure you want to flag(report) comment?";
     modal.style.display = "block";
     document.querySelector(".alert_yes").onclick = () => {
-      socket.emit("flag-message", data);
+      const payload = {
+        msgId: data.msgId,
+        channel: channel,
+        msg: modifiedMsg,
+      };
+      socket.emit("flag-message", payload);
       modal.style.display = "none";
     };
 
