@@ -15,9 +15,6 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
           if (tab.url.includes("tv.html")) {
             tvWindowFound = true;
             obj.answer = true;
-            //chrome.runtime.sendMessage(obj);
-            //obj.tag = "tv";
-            //if (obj.open) chrome.tabs.sendMessage(tab.id, obj, null);
             response(obj);
           }
         });
@@ -25,7 +22,6 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
 
       if (!tvWindowFound) {
         obj.answer = false;
-        //chrome.runtime.sendMessage(obj);
         console.log("No active TV window found.");
         response(obj);
       }

@@ -32,8 +32,7 @@ prevChannelItem.addEventListener("click", () => scrollByAmount(-100));
 nextChannelItem.addEventListener("click", () => scrollByAmount(100));
 
 //================================== Initialize =======================================
-//const socket = io("https://plurg-server.onrender.com");
-const socket = io("http://localhost:5000");
+const socket = io("https://plurg-server.onrender.com");
 
 const size = 10;
 let isHome = true;
@@ -148,9 +147,6 @@ socket.on("connect", () => {
 
   if (!socket.hasListeners("showing")) {
     socket.on("showing", (obj) => {
-      //chrome.runtime.sendMessage({ tag: "err", msg: obj });
-      console.log(obj);
-
       obj.channel = channel;
       obj.open = true;
       if (obj.now) nowShow.innerText = obj.now;
@@ -163,7 +159,6 @@ socket.on("connect", () => {
 
   if (!window.hasMessageListener) {
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
-      console.log(obj);
       if (obj.tag === "next") {
         obj.channel = channel;
         socket.emit("next", obj);
@@ -182,8 +177,6 @@ socket.on("connect", () => {
       chrome.runtime
         .sendMessage({ tag: "ping", answer: false })
         .then((res) => {
-          console.log(res);
-
           for (let i = 0; i < channelsNav.children.length; i++) {
             channelsNav.children[i].classList.remove("ch_sel");
           }
@@ -200,7 +193,6 @@ socket.on("connect", () => {
             socket.emit("leave-room", prevChannel);
             socket.emit("join-room", channel);
           }
-          console.log(prevChannel, channel);
           socket.emit("showing", channel);
 
           if (res == undefined) createTVWindow();
@@ -250,8 +242,6 @@ socket.on("connect", () => {
   });
 
   socket.on("delete-message", (obj) => {
-    console.log(obj);
-
     noMsgs.style.display = "none";
     chrome.storage.local.get([channel], (result) => {
       let messages = result[channel] || [];
@@ -261,7 +251,6 @@ socket.on("connect", () => {
 
       allItems.forEach((item) => {
         if (item.dataset.id === obj.msgId) {
-          console.log(item);
           item.remove();
         }
       });

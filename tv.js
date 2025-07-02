@@ -89,7 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        console.log(tvObj);
         disableUI();
       });
       adCloseLisener = true;
