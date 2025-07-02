@@ -34,7 +34,40 @@
         object-fit: cover;
       }
 
-      .navStreams {
+      .ad_container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #262938;
+        display: none;
+      }
+
+      .ad_close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: white;
+        text-align: end;
+        align-self: flex-end;
+        margin-top: 6px;
+        margin-right: 6px;
+        font-size: 0.5rem;
+        font-weight: bold;
+        display: none;
+      }
+
+      .ad_container p {
+        align-self: center;
+        justify-self: center;
+        text-align: center;
+        font-size: 1.2rem;
+        color: white;
+      }
+
+      .nav_streams {
         position: absolute;
         top: 0;
         left: 0;
@@ -62,9 +95,13 @@
   </head>
   <body>
     <video id="tv" class="video-js player" autoplay preload="auto"></video>
-    <div class="navStreams">
-      <label class="prevStream">&#x276E;</label>
-      <label class="nextStream">&#x276F;</label>
+    <div class="ad_container">
+      <label class="ad_close">&#x2715;</label>
+      <p>Ad space</p>
+    </div>
+    <div class="nav_streams">
+      <label class="prev_stream">&#x276E;</label>
+      <label class="next_stream">&#x276F;</label>
     </div>
     <script src="tv.js"></script>
   </body>

@@ -7,34 +7,28 @@ chrome.runtime.onMessage.addListener((obj, sender, response) => {
 
   if (obj.tag === "err") {
     console.log(obj);
-  } else if (obj.tag === "loadTV") {
+  } else if (obj.tag === "ping") {
     chrome.windows.getAll({ populate: true }, (windows) => {
       let tvWindowFound = false;
       windows.forEach((window) => {
         window.tabs.forEach((tab) => {
           if (tab.url.includes("tv.html")) {
             tvWindowFound = true;
-            const payload = {
-              tag: "isOpen",
-              answer: true,
-            };
-            chrome.runtime.sendMessage(payload);
-            if (obj.open) chrome.tabs.sendMessage(tab.id, obj, null);
+            obj.answer = true;
+            //chrome.runtime.sendMessage(obj);
+            //obj.tag = "tv";
+            //if (obj.open) chrome.tabs.sendMessage(tab.id, obj, null);
+            response(obj);
           }
         });
       });
 
       if (!tvWindowFound) {
-        const payload = {
-          tag: "isOpen",
-          answer: false,
-        };
-        chrome.runtime.sendMessage(payload);
+        obj.answer = false;
+        //chrome.runtime.sendMessage(obj);
         console.log("No active TV window found.");
+        response(obj);
       }
     });
-  } else if (obj.tag === "next") {
-    obj.tag = "sendNext";
-    chrome.runtime.sendMessage(obj);
   }
 });

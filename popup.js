@@ -43,13 +43,13 @@ let userRecord = null;
 let prevChannel = null;
 let channel = "All";
 let isMenu = false;
-let reload = false;
-let isTVOpen = false;
 
 setTimeout(() => {
   splashCover.style.display = "none";
   homeCover.style.display = "block";
 }, 2000);
+
+const version = chrome.runtime.getManifest().version;
 
 chrome.storage.local.get("userProfile", (result) => {
   if (result.userProfile) {
@@ -61,7 +61,7 @@ chrome.storage.local.get("userProfile", (result) => {
 
 chrome.storage.local.get("currentChannel", (result) => {
   if (!result.currentChannel) {
-    channelsNav.children[0].classList.add("ch_sel");
+    channelsNav.children[1].classList.add("ch_sel");
     loadMessages();
     return;
   }
@@ -116,66 +116,102 @@ socket.on("connect", () => {
   brandSpinner.style.display = "none";
   session = socket.id;
   let clientId = null;
+  let isLaunched = true;
   socket.once("onclient", (obj) => {
     clientId = obj;
   });
 
   socket.emit("join-room", channel);
   socket.emit("showing", channel);
+  socket.emit("version", version);
   let winObj = null;
 
   socket.on("nom", (obj) => {
     count.innerText = toComma(obj);
   });
 
+  socket.on("version", (obj) => {
+    alert_msg.innerText =
+      "A new version of PlurgTV is available, update for better experience";
+    modal.style.display = "block";
+    document.querySelector(".alert_yes").onclick = () => {
+      chrome.tabs.create({
+        url: "https://chromewebstore.google.com/detail/plurg/okkckmldiolpfjignfpblddgmfbncpfl",
+      });
+      modal.style.display = "none";
+    };
+
+    document.querySelector(".alert_no").onclick = () => {
+      modal.style.display = "none";
+    };
+  });
+
   if (!socket.hasListeners("showing")) {
     socket.on("showing", (obj) => {
       //chrome.runtime.sendMessage({ tag: "err", msg: obj });
+      console.log(obj);
+
       obj.channel = channel;
-      obj.tag = "loadTV";
       obj.open = true;
       if (obj.now) nowShow.innerText = obj.now;
       if (obj.next) nextShow.innerText = obj.next;
       winObj = obj;
+      if (!isLaunched) chrome.runtime.sendMessage(winObj);
+      isLaunched = false;
     });
   }
 
-  chrome.runtime.onMessage.addListener((obj, sender, response) => {
-    if (obj.tag === "sendNext") {
-      obj.channel = channel;
-      socket.emit("next", obj);
-    } else if (obj.tag === "isOpen") {
-      isTVOpen = obj.answer;
-    }
-  });
+  if (!window.hasMessageListener) {
+    chrome.runtime.onMessage.addListener((obj, sender, response) => {
+      console.log(obj);
+      if (obj.tag === "next") {
+        obj.channel = channel;
+        socket.emit("next", obj);
+      } else if (obj.tag === "prev") {
+        obj.channel = channel;
+        socket.emit("prev", obj);
+      }
+    });
+    window.hasMessageListener = true;
+  }
 
   //================================== START TV =======================================
-  channelsNav.addEventListener("click", (e) => {
-    e.preventDefault();
-    chrome.runtime.sendMessage({ tag: "loadTV", answer: false });
-    for (let i = 0; i < channelsNav.children.length; i++) {
-      channelsNav.children[i].classList.remove("ch_sel");
-    }
+  if (!window.listenerAdded) {
+    channelsNav.addEventListener("click", (e) => {
+      e.preventDefault();
+      chrome.runtime
+        .sendMessage({ tag: "ping", answer: false })
+        .then((res) => {
+          console.log(res);
 
-    const element = e.target.tagName !== "DIV" ? e.target.parentNode : e.target;
-    prevChannel = channel;
-    element.classList.add("ch_sel");
-    channel = element.getAttribute("data-id");
-    chrome.storage.local.set({ currentChannel: channel });
-    loadMessages();
+          for (let i = 0; i < channelsNav.children.length; i++) {
+            channelsNav.children[i].classList.remove("ch_sel");
+          }
 
-    if (prevChannel !== channel) {
-      socket.emit("leave-room", prevChannel);
-      socket.emit("join-room", channel);
-    }
+          const element =
+            e.target.tagName !== "DIV" ? e.target.parentNode : e.target;
+          prevChannel = channel;
+          element.classList.add("ch_sel");
+          channel = element.getAttribute("data-id");
+          chrome.storage.local.set({ currentChannel: channel });
+          loadMessages();
 
-    console.log(channel);
-    reload = true;
-    socket.emit("showing", channel);
+          if (prevChannel !== channel) {
+            socket.emit("leave-room", prevChannel);
+            socket.emit("join-room", channel);
+          }
+          console.log(prevChannel, channel);
+          socket.emit("showing", channel);
 
-    if (!isTVOpen) createTVWindow();
-    else if (winObj) chrome.runtime.sendMessage(winObj);
-  });
+          if (res == undefined) createTVWindow();
+          else if (winObj) chrome.runtime.sendMessage(winObj);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+    window.listenerAdded = true;
+  }
 
   async function createTVWindow() {
     const url = "tv.html";
@@ -263,7 +299,7 @@ socket.on("connect", () => {
       userId: userRecord.userId,
       username: userRecord.username,
       img: userRecord.img,
-      email: userRecord.email,
+      channel: channel,
     };
     socket.emit("message", obj);
     writeField.value = null;
@@ -421,7 +457,11 @@ function addItem(data) {
     alert_msg.innerText = "Are you sure you want to delete comment?";
     modal.style.display = "block";
     document.querySelector(".alert_yes").onclick = () => {
-      socket.emit("delete-message", data.msgId);
+      const payload = {
+        msgId: data.msgId,
+        channel: channel,
+      };
+      socket.emit("delete-message", payload);
       modal.style.display = "none";
     };
 
